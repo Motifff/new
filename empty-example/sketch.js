@@ -4,6 +4,7 @@ let lyricPos=0;
 let lyrics=[["浮","夸","风"],
             [0,12,14]];
 let mouseIsReleased=false;
+let mouseDelay=0;
 let T;
 let theTable;
 let player;
@@ -30,11 +31,14 @@ function setup() {
     myBoard=new countBoard();
     lyricLen=songLen*100;
     myTable=theTable.getArray();
+    rectMode(CENTER);
+    noStroke();
 
 }
 
 function draw() {
     mov=T*100;
+    myBackground();
     T=player.currentTime;
     myLyric.up();
     myPop.up();
@@ -42,8 +46,16 @@ function draw() {
     //print(frameCount / a);
 }
 
+function myBackground(){
+    fill(0,0,0);
+    rect(540,0,1080,360);
+    fill(120,120,120);
+    rect(540,360,1080,360);
+}
+
 function mouseReleased(){
     mouseIsReleased=true;
+    mouseDelay=10;
 }
 
 function search(a){
@@ -60,7 +72,7 @@ function search(a){
 function popUp(){
     this.tmp=[];
     this.tmpTime=[];
-    this.tmpSize=[];
+    this.tmpSize=[120,120,120,120];
     this.tmpColor=[];
     for(let i=0;i<4;i++){
         let r=int(random(4));
@@ -71,21 +83,21 @@ function popUp(){
         this.tmpTime[i]=lyrics[1][i];
         this.tmpColor[i]=0;
     }
-    for(let i=0;i<4;i++){
-        this.tmpSize[i]=120;
-    }
     this.up=function(){
         let nowP=0;
         print("lyrics");
-        for(let i=0;i<lyrics[0].length-1;i++){
-            if(T>lyrics[1][i] && T<lyrics[1][i+1]){
-                nowP=i;
+        for(let i=0;i<lyrics[0].length-1;i++) {
+            if (T > lyrics[1][i] && T < lyrics[1][i + 1]) {
+                nowP = i;
                 break;
             }
         }
+        mouseDelay-=1;
         for(let i=0;i<4;i++){
-            if(mouseX>220+i*160 && mouseX<380+i*160 && abs(mouseY-460)<120){
-                if(mouseIsReleased){
+            fill(150,150,150);
+            rect(300+i*160,380,160,160,10,10,10,10);
+            if(abs(mouseX-300-i*160)<80 && abs(mouseY-380)<80){
+                if(mouseDelay>0){
                     for(let j=0;j<myLyric.tmp.length;j++){
                         if(abs(myLyric.tmp[j].pos/100-T)<10){
                             myLyric.tmp[j].trig=true;
@@ -97,21 +109,24 @@ function popUp(){
                             break;
                         }
                     }
-                    mouseIsReleased=false;
+                    fill(255,255,255);
+                    rect(300+i*160,420,160,80,0,0,10,10);
                 }
                 this.tmpSize[i]=160;
-            }
-            if(this.tmpSize[i]>120){
-                this.tmpSize[i]=5;
             }
             if(this.tmpTime[i]/100<520){
                 this.tmp[i]=lyrics[0][nowP+4];
                 this.tmpTime[i]=lyrics[1][nowP+4];
             }
+        }
+        for(let i=0;i<4;i++){
+            if(this.tmpSize[i]>120){
+                this.tmpSize[i]=this.tmpSize[i]*0.93;
+            }
             fill(0,0,0);
-            rect(220+i*160,400,this.tmpSize[i],this.tmpSize[i],5,5,5,5);
+            rect(300+i*160,380,this.tmpSize[i],this.tmpSize[i],10,10,10,10);
             fill(255,255,255);
-            text(search(this.tmp[i]),220+i*160,460);
+            text(search(this.tmp[i]),300+i*160-20,460);
         }
     }
 }
@@ -171,7 +186,7 @@ function s_lyric(){
             this.alpha-=5;
         }
         fill(126,126,126,this.alpha);
-        rect(this.pos-mov,270,this.siz,this.siz,5,5,5,5);
+        rect(this.pos-mov,200,this.siz,this.siz,5,5,5,5);
         textSize(this.siz);
         text(this.key,this.pos-mov,270);
 
@@ -189,6 +204,7 @@ function countBoard(){
             }
             this.scores[i].up();
         }
+        fill(255,255,255);
         beginShape();
         vertex(0,0);
         vertex(400,0);
