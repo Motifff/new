@@ -12,6 +12,7 @@ let myTable;
 let myLyric;
 let myPop;
 let myBoard;
+let resumeMode=false;
 
 
 //preload must be at the top of the program
@@ -33,6 +34,7 @@ function setup() {
     myTable=theTable.getArray();
     rectMode(CENTER);
     noStroke();
+    player.loop();
 
 }
 
@@ -44,6 +46,8 @@ function draw() {
     myPop.up();
     myBoard.up();
     //print(frameCount / a);
+    text(T,1080,0);
+    resume(resumeMode);
 }
 
 function myBackground(){
@@ -51,6 +55,21 @@ function myBackground(){
     rect(540,0,1080,360);
     fill(120,120,120);
     rect(540,360,1080,360);
+}
+
+function resume(a){
+    if(abs(mouseX-1040)<30 && abs(mouseY-30)<30 && mouseIsReleased===true && a===false){
+        player.pause();
+        resumeMode=true;
+        mouseIsReleased=false;
+        fill(0,150);
+        rect(540,360,1080,720);
+        if(keyIsPressed) {
+            resumeMode = false;
+        }
+    }else if(player.isPlaying===false) {
+        player.play();
+    }
 }
 
 function mouseReleased(){
