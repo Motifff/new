@@ -1,11 +1,10 @@
-let songLen=0;
-let lyricLen=0;
+let songLen=0;//歌曲长度
 let lyricPos=0;
 let lyrics=[["浮","夸","风"],
-            [0,12,14]];
-let mouseIsReleased=false;
+            [0,12,14]];//歌词存储列表，先单字再时间
+let mouseIsReleased=false;//p5没有很完善的鼠标注释功能
 let mouseDelay=0;
-let T;
+let T;//当前时间码
 let theTable;
 let player;
 let myTable;
@@ -18,36 +17,30 @@ let resumeMode=false;
 //preload must be at the top of the program
 function preload(){
     theTable=loadTable('data/xinhua.csv','csv');
-    print(1);
-    print(theTable);
     player=loadSound("data/1.mp3");
 }
 
 //p5 drawing parts
 function setup() {
     createCanvas(1080,720);
-    print(2);
-    myLyric=new lyricLine();
-    myPop=new popUp();
-    myBoard=new countBoard();
-    lyricLen=songLen*100;
-    myTable=theTable.getArray();
+    myLyric=new lyricLine(); //歌词线
+    myPop=new popUp();       //打击按键
+    myBoard=new countBoard(); //计分版
+    myTable=theTable.getArray();//多余操作
     rectMode(CENTER);
     noStroke();
     player.loop();
-
 }
 
 function draw() {
     mov=T*100;
     myBackground();
-    T=player.currentTime;
-    myLyric.up();
-    myPop.up();
-    myBoard.up();
-    //print(frameCount / a);
-    text(T,1080,0);
-    resume(resumeMode);
+    T=player.currentTime();//播放器时间
+    myLyric.up();//更新
+    myPop.up();//更新
+    myBoard.up();//更新
+    text(T,540,540);
+    //resume(resumeMode);//暂停 这里有问题
 }
 
 function myBackground(){
@@ -55,20 +48,22 @@ function myBackground(){
     rect(540,0,1080,360);
     fill(120,120,120);
     rect(540,360,1080,360);
+    //背景叠图
 }
 
 function resume(a){
+    fill(255,255,255);
+    ellipse(1040,30,30,30);
     if(abs(mouseX-1040)<30 && abs(mouseY-30)<30 && mouseIsReleased===true && a===false){
         player.pause();
         resumeMode=true;
         mouseIsReleased=false;
         fill(0,150);
         rect(540,360,1080,720);
-        if(keyIsPressed) {
-            resumeMode = false;
-        }
-    }else if(player.isPlaying===false) {
+
+    }else if(player.isPlaying===false && mouseIsReleased===true) {
         player.play();
+        resumeMode = false;
     }
 }
 
@@ -101,29 +96,29 @@ function popUp(){
         this.tmp[i]=lyrics[0][i];
         this.tmpTime[i]=lyrics[1][i];
         this.tmpColor[i]=0;
-    }
+    }//随机将一到四位置的字符按照歌词位置增加
     this.up=function(){
         let nowP=0;
-        print("lyrics");
         for(let i=0;i<lyrics[0].length-1;i++) {
             if (T > lyrics[1][i] && T < lyrics[1][i + 1]) {
                 nowP = i;
+                lyricPos=nowP;
                 break;
             }
-        }
-        mouseDelay-=1;
+        }//找到时间对应的歌词，获取当前歌词位置
+        mouseDelay-=1;//动画延迟
         for(let i=0;i<4;i++){
             fill(150,150,150);
             rect(300+i*160,380,160,160,10,10,10,10);
-            if(abs(mouseX-300-i*160)<80 && abs(mouseY-380)<80){
+            if(abs(mouseX-300-i*160)<80 && abs(mouseY-380)<80 && mouseIsReleased===true){
                 if(mouseDelay>0){
-                    for(let j=0;j<myLyric.tmp.length;j++){
-                        if(abs(myLyric.tmp[j].pos/100-T)<10){
+                    for(let j=0;j<myLyric.tmp.length;j++){//查找时间线上有没有歌词
+                        if(abs(myLyric.tmp[j].pos/100-T)<10 && myLyric.tmp[j].key===this.tmp[i]){
                             myLyric.tmp[j].trig=true;
                             if(abs(myLyric.tmp[j].pos/100-T)<8){
-                                myBoard.scores.add(100);
+                                myBoard.scores.add(100);//评分
                             }else{
-                                myBoard.scores.add(80);
+                                myBoard.scores.add(80);//评分
                             }
                             break;
                         }
@@ -131,9 +126,9 @@ function popUp(){
                     fill(255,255,255);
                     rect(300+i*160,420,160,80,0,0,10,10);
                 }
-                this.tmpSize[i]=160;
+                this.tmpSize[i]=160;//放大效果
             }
-            if(this.tmpTime[i]/100<520){
+            if(this.tmpTime[i]/100<520){//如果方格内存在过期，更新为四个后的
                 this.tmp[i]=lyrics[0][nowP+4];
                 this.tmpTime[i]=lyrics[1][nowP+4];
             }
@@ -145,7 +140,7 @@ function popUp(){
             fill(0,0,0);
             rect(300+i*160,380,this.tmpSize[i],this.tmpSize[i],10,10,10,10);
             fill(255,255,255);
-            text(search(this.tmp[i]),300+i*160-20,460);
+            text(search(this.tmp[i]),300+i*160-20,460);//只存储单字，不存储部首（写的时候忘了列表）
         }
     }
 }
@@ -162,12 +157,11 @@ function lyricLine() {
                     this.tmp.slice(i);
                 }
             }
-        }
+        }//自动删除
         while(this.tmp.length<=10){
-            let a=new s_lyric(lyrics[0][lyricPos],lyrics[1][lyricPos]);
+            let a=new s_lyric(lyrics[0][lyricPos],lyrics[1][lyricPos]);//lyricPos在105行更新
             this.tmp.push(a);
-        }
-
+        }//十个往后的歌词
     }
 }
 
@@ -178,8 +172,8 @@ function s_lyric(){
     this.siz=80;
     this.pos=0;
     this.life=true;
-    this.fade=false;
-    this.alpha=255;
+    this.fade=false;//拓展（没用
+    this.alpha=255;//拓展（没用
     this.po=false;
     this.born=function(pos,key){
         this.pos=pos*100;
@@ -193,22 +187,22 @@ function s_lyric(){
                 if(this.siz<0){
                     this.life=false
                 }
-            }
+            }//靠近中心放大
         }else if(this.siz>80 && this.po===false){
             this.siz=this.siz*0.9;
         }
-        if((this.pos-mov)<540){
+        if((this.pos-mov)<510){
             this.fade=true;
             if((this.pos-mov)<100){
                 this.life=false;
             }
             this.alpha-=5;
-        }
+        }//已过期的淡出
         fill(126,126,126,this.alpha);
         rect(this.pos-mov,200,this.siz,this.siz,5,5,5,5);
         textSize(this.siz);
         text(this.key,this.pos-mov,270);
-
+        //就是画元件
     }
 }
 
